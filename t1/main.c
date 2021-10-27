@@ -30,9 +30,9 @@ imprimeMatriz(matriz_t matriz)
 }
 
 void
-montaMatrizDeAdjacencia(matriz_t *matriz)
+montaMatrizDeAdjacencia(matriz_t *matriz, int quantidadeArestas)
 {
-    for (int i = 0; i < matriz->tamanho; i++){
+    for (int i = 0; i < quantidadeArestas; i++){
         int a, b, peso;
         scanf("%d %d %d", &a, &b, &peso);
         matriz->m[a-1][b-1] = peso;
@@ -89,7 +89,7 @@ main()
     matriz.m = alocaMatriz(matriz.tamanho);
 
     // criar matriz de adjacencia
-    montaMatrizDeAdjacencia(&matriz); 
+    montaMatrizDeAdjacencia(&matriz, quantidadeArestas); 
 
     imprimeMatriz(matriz);
     
