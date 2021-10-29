@@ -66,20 +66,25 @@ criaEntradaLPSolve(matriz_t matriz, int origem, int destino, int demanda)
 {
 
     /* indica que o objetivo deve ser minimizado */
+    fprintf(stdout, "/* Função Objetiva*/\n");
     fprintf(stdout, "min: ");
 
     /* cria a função objetiva */
     for (int i = 0; i < matriz.tamanho; i++){
-        for (int j = 0; j < matriz.tamanho; j++){
+        for (int j = 0; j < i; j++){
             if (matriz.m[i][j] != 0){ 
-                fprintf(stdout, "+ %dx%d%d", matriz.m[i][j]*demanda,i+1,j+1);
+                fprintf(stdout, "+ %dx%d%d ", matriz.m[j][i]*demanda,j+1,i+1);
+                fprintf(stdout, "+ %dx%d%d ", matriz.m[i][j]*demanda,i+1,j+1);
             }
         }
     }
     fprintf(stdout,";\n\n");
 
     /* cria as restrições */
+
+    fprintf(stdout, "/* Restrições */\n");
     for (int i = 0; i < matriz.tamanho; i++){
+        fprintf(stdout, "/* Restrições da sede %d */\n", i);
         for (int j = 0; j < matriz.tamanho; j++)
         {
             if (matriz.m[i][j] != 0){ 
@@ -113,7 +118,7 @@ main()
     // cria a matriz de adjacencia
     montaMatrizDeAdjacencia(&matriz, quantidadeArestas); 
 
-    imprimeMatriz(matriz);
+    //imprimeMatriz(matriz);
     
     // cria a entrada lpSolve
     criaEntradaLPSolve(matriz, origem, destino, demanda);
