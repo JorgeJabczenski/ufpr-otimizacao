@@ -1,12 +1,30 @@
+/**********************/
+/*  Otimização -> T1  */
+/* jlvj19 GRR20190372 */
+/* vtvd19 GRR20190367 */
+/**********************/
+
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Struct de uma matriz*/
 struct matriz_s {
     int** m;
     int tamanho;
 };
 typedef struct matriz_s matriz_t;
 
+/* Struct utilizada para gerar a entrada
+     do LP solve                         */
+struct lpSolve_s {
+    matriz_t matriz;
+    int origem;
+    int destino;
+    int demanda;
+};
+typedef struct lpSolve_s lpSolve_t;
+
+/* Função genérica de alocação de matrizes */
 int**
 alocaMatriz(int n)
 {
@@ -18,6 +36,7 @@ alocaMatriz(int n)
     return m;
 }
 
+/* Função genérica de impressão de matrizes */
 void
 imprimeMatriz(matriz_t matriz)
 {
@@ -29,6 +48,7 @@ imprimeMatriz(matriz_t matriz)
     }
 }
 
+/* Lê a entrada e monta a matriz de ajdecencia */
 void
 montaMatrizDeAdjacencia(matriz_t *matriz, int quantidadeArestas)
 {
@@ -40,12 +60,15 @@ montaMatrizDeAdjacencia(matriz_t *matriz, int quantidadeArestas)
     }
 }
 
+/* Cria a entrada do lpSolve a martir da matriz de adjacencia */
 void
 criaEntradaLPSolve(matriz_t matriz, int origem, int destino, int demanda)
 {
 
+    /* indica que o objetivo deve ser minimizado */
     fprintf(stdout, "min: ");
 
+    /* cria a função objetiva */
     for (int i = 0; i < matriz.tamanho; i++){
         for (int j = 0; j < matriz.tamanho; j++){
             if (matriz.m[i][j] != 0){ 
@@ -55,6 +78,7 @@ criaEntradaLPSolve(matriz_t matriz, int origem, int destino, int demanda)
     }
     fprintf(stdout,";\n\n");
 
+    /* cria as restrições */
     for (int i = 0; i < matriz.tamanho; i++){
         for (int j = 0; j < matriz.tamanho; j++)
         {
@@ -69,31 +93,29 @@ criaEntradaLPSolve(matriz_t matriz, int origem, int destino, int demanda)
         else if (i+1 == destino) fprintf(stdout," = -1; \n");
         else                     fprintf(stdout," =  0; \n");
     }
-
-
 }
 
 int 
 main()
 {  
     matriz_t matriz;
-    int quantidadeArestas;
     int origem;
     int destino;
     int demanda;
+    int quantidadeArestas;
 
     scanf("%d %d", &matriz.tamanho, &quantidadeArestas);
     scanf("%d %d %d", &origem, &destino, &demanda);
 
-    // ler entrada
+    // lê a entrada
     matriz.m = alocaMatriz(matriz.tamanho);
 
-    // criar matriz de adjacencia
+    // cria a matriz de adjacencia
     montaMatrizDeAdjacencia(&matriz, quantidadeArestas); 
 
     imprimeMatriz(matriz);
     
-    // criar entrada lpSolve
+    // cria a entrada lpSolve
     criaEntradaLPSolve(matriz, origem, destino, demanda);
 
     return 0;
