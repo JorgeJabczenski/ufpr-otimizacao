@@ -66,14 +66,14 @@ criaEntradaLPSolve(matriz_t matriz, int origem, int destino, int demanda)
 
     fprintf(stdout, "/* Restrições */\n");
     for (int i = 0; i < matriz.tamanho; i++){
-        fprintf(stdout, "/* Restrições da sede %d */\n", i);
+        fprintf(stdout, "/* Restrições da sede %d */\n", i+1);
         for (int j = 0; j < matriz.tamanho; j++)
         {
             if (matriz.m[i][j] != 0){ 
-                fprintf(stdout, "+ x%d%d",i+1,j+1);
+                fprintf(stdout, "+ x%d%d ",i+1,j+1);
             }
             if (matriz.m[j][i] != 0){ 
-                fprintf(stdout, "- x%d%d",j+1,i+1);
+                fprintf(stdout, "- x%d%d ",j+1,i+1);
             }
         }
         if      (i+1 ==  origem) fprintf(stdout," =  1; \n");
