@@ -23,8 +23,6 @@ main()
 
     // cria a matriz de adjacencia
     montaMatrizDeAdjacencia(&matriz, quantidadeArestas); 
-
-    //imprimeMatriz(matriz);
     
     // cria a entrada lpSolve
     criaEntradaLPSolve(matriz, origem, destino, demanda);
