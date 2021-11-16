@@ -1,5 +1,5 @@
-CC = gcc
-CFLAGS = -Wall -Wextra
+CC = g++
+CXXFLAGS = -Wall -Wextra -g
 
 all : quimica
 
