@@ -29,7 +29,7 @@ typedef struct par_s{
 int vertices;          //
 int qtdObjetos;        //
 int qtdPares;          //
-int capacidadeMaxima;  //
+int pesoMaximo;  //
 int *escolhasAtuais;   // possui apenas 0s ou 1s
 int *escolhasOtimas;   //
 int lucroMaximo;       //
@@ -59,7 +59,31 @@ bool reage(int *estado_atual, int item_teste){
 }
 
 
-void mochila_quimica(int tamanhoAtual){
+void mochila_quimica(int tamanhoAtual, int pesoAtual){
+    
+    vertices++;
+    
+    if (tamanhoAtual == qtdObjetos){
+        int lucroAtual = 0;
+        for(int i = 0; i < qtdObjetos; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+        if(lucroAtual > lucroMaximo){
+            lucroMaximo = lucroAtual;
+            copiaVetores(escolhasOtimas, escolhasAtuais);
+        }
+    } else {
+        int pesoItemAtual = objetos[tamanhoAtual].peso;
+        if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
+            escolhasAtuais[tamanhoAtual] = 1;
+            mochila_quimica(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+        }
+        escolhasAtuais[tamanhoAtual] = 0;
+        mochila_quimica(tamanhoAtual+1, pesoAtual);
+    }
+}
+
+void mochila_quimica_ingenua(int tamanhoAtual, int pesoAtual){
     
     vertices++;
     
@@ -68,7 +92,7 @@ void mochila_quimica(int tamanhoAtual){
         for(int i = 0; i < qtdObjetos; i++){
             somaPesos += objetos[i].peso*escolhasAtuais[i];
         }
-        if(somaPesos <= capacidadeMaxima){
+        if(somaPesos <= pesoMaximo){
             int lucroAtual = 0;
             for(int i = 0; i < qtdObjetos; i++){
                 lucroAtual += objetos[i].valor*escolhasAtuais[i];
@@ -79,13 +103,13 @@ void mochila_quimica(int tamanhoAtual){
             }
         }
     } else {
-        // escolhe baseado na função reage(evitar de explodir a porra toda né)?
+        int pesoItemAtual = objetos[tamanhoAtual].peso;
         if (!reage(escolhasAtuais, tamanhoAtual)){
             escolhasAtuais[tamanhoAtual] = 1;
-            mochila_quimica(tamanhoAtual+1);
+            mochila_quimica_ingenua(tamanhoAtual+1, pesoAtual + pesoItemAtual);
         }
         escolhasAtuais[tamanhoAtual] = 0;
-        mochila_quimica(tamanhoAtual+1);
+        mochila_quimica_ingenua(tamanhoAtual+1, pesoAtual);
     }
 }
 
@@ -114,7 +138,51 @@ void imprimePar(par_t par){
     printf("a: %d | b: %d\n", par.a, par.b);
 }
 
+void ordena(objeto_s *objetos, int tamanho){
 
+    float *razao = (float*) malloc (sizeof(float)*tamanho);
+
+    for (int i = 0; i < tamanho; i++){
+        razao[i] = (float) objetos[i].valor / objetos[i].peso;
+    }
+
+    // bubblesort reverso ao contrario invertido
+    for (int i = 0; i < tamanho; i++){
+        for (int j = 0; j < tamanho; j++){
+            if (razao[j] < razao[j+1]){
+                swap(razao[j], razao[j+1]);
+                swap(objetos[j], objetos[j+1]);
+            }
+        }
+    }
+
+    free(razao);
+}
+
+double rational_knapsack(objeto_t *objetos, int tamanhoAtual){
+    
+    float *escolha = (float*) calloc (sizeof(float),pesoMaximo);
+    double peso = 0;
+    double valor = 0;
+    int i = 0;
+
+    ordena(objetos,qtdObjetos);
+
+    while((i < tamanhoAtual) && (peso < pesoMaximo)){
+        if(peso + objetos[i].peso <= pesoMaximo){
+            escolha[i] = 1;
+            peso += objetos[i].peso;
+            valor += objetos[i].valor;
+            i++;
+        } else {
+            escolha[i] = (double) (pesoMaximo - peso)/objetos[i].peso;
+            peso = pesoMaximo;
+            valor += escolha[i]*objetos[i].valor;
+            i++;
+        }
+    }
+    return valor;
+}
 
 int
 main()
@@ -122,7 +190,7 @@ main()
     vertices = 1;
 
     // Ler entradas
-    scanf("%d %d %d", &qtdObjetos, &qtdPares, &capacidadeMaxima);
+    scanf("%d %d %d", &qtdObjetos, &qtdPares, &pesoMaximo);
 
     objetos = alocaObjetos(qtdObjetos);
     pares   = alocaPares(qtdPares);
@@ -134,11 +202,11 @@ main()
     lerPares(qtdPares, pares);
 
     // Imprimir saída
-    printf("CapMax : %d\n", capacidadeMaxima);
+    printf("CapMax : %d\n", pesoMaximo);
     for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
     for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
 
-    mochila_quimica(0);
+    mochila_quimica(0,0);
 
     cout << "Vertices: " << vertices << endl;
 
