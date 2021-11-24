@@ -1,2 +1,4 @@
 quimica
 *.o
+.vscode
+a.out

@@ -33,6 +33,7 @@ int pesoMaximo;        //
 int *escolhasAtuais;   // possui apenas 0s ou 1s
 int *escolhasOtimas;   //
 int lucroMaximo;       //
+int pesoFinal;         // nao precisa
           
 objeto_t *objetos;     //
 par_t *pares;          //
@@ -50,7 +51,7 @@ void lerObjetos(int n, objeto_t *objetos){
     
 }
 void imprimeObjeto(objeto_t objeto){
-    printf("peso: %d | valor: %d\n", objeto.peso, objeto.valor);
+    printf("peso: %d \t| valor: %d\n", objeto.peso, objeto.valor);
 }
 
 
@@ -88,6 +89,12 @@ void copiaVetores(int *dst, int *scr){
     memcpy(dst, scr, sizeof(*dst));
 }
 
+void copiaEscolhas(){
+    for (int i = 0; i < qtdObjetos; i++)
+        escolhasOtimas[i] = escolhasAtuais[i];
+}
+
+
 
 double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
 
@@ -103,13 +110,7 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
         copia[i].valor = objetos[inicio+i].valor;
     }
 
-    cout << "----------------------" << endl;
-    cout << "ANTES" << endl;
-    for (int i = 0 ; i < tamanhoAtual; i++) imprimeObjeto(copia[i]);
     ordena(copia,tamanhoAtual, inicio);
-    cout << "DEPOIS" << endl;
-    for (int i = 0 ; i < tamanhoAtual; i++) imprimeObjeto(copia[i]);
-    cout << "----------------------" << endl;
 
     int i = 0;
     while((i < tamanhoAtual) && (peso < pesoRestante)){
@@ -132,10 +133,10 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
 bool reage(int *estado_atual, int item_teste){
     
     for (int i = 0; i < qtdPares; i++){
-        if ((pares[i].a == item_teste) && (estado_atual[pares[i].b-1] == 1)){
+        if ((pares[i].a-1 == item_teste) && (estado_atual[pares[i].b-1] == 1)){
             return true;
         }
-        if ((pares[i].b == item_teste) && (estado_atual[pares[i].a-1] == 1)){
+        if ((pares[i].b-1 == item_teste) && (estado_atual[pares[i].a-1] == 1)){
             return true;
         }
     }
@@ -154,8 +155,13 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
         }
         if(lucroAtual > lucroMaximo){
             lucroMaximo = lucroAtual;
-            copiaVetores(escolhasOtimas, escolhasAtuais);
+            pesoFinal = pesoAtual;
+            copiaEscolhas();
+            for (int i = 0 ; i < qtdObjetos; i++) cout << escolhasOtimas[i] ; 
+            cout << endl;
+
         }
+        
     } else {
     
         float lucroAtual = 0;
@@ -165,13 +171,10 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
         }
 
         double B = (float) lucroAtual + rational_knapsack(objetos, tamanhoAtual, pesoMaximo - pesoAtual);
-        cout << B << " vs " << lucroMaximo << endl;
         if (B <= lucroMaximo) {
-            cout << "pegou no bounding" << endl;
             return;
         }
 
-        cout << pesoAtual << endl;
         int pesoItemAtual = objetos[tamanhoAtual].peso;
         if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
             escolhasAtuais[tamanhoAtual] = 1;
@@ -193,6 +196,7 @@ void mochila_quimica_sem_bounding(int tamanhoAtual, int pesoAtual){
         }
         if(lucroAtual > lucroMaximo){
             lucroMaximo = lucroAtual;
+            pesoFinal = pesoAtual;
             copiaVetores(escolhasOtimas, escolhasAtuais);
         }
     } else {
@@ -222,6 +226,7 @@ void mochila_quimica_ingenua(int tamanhoAtual, int pesoAtual){
             }
             if(lucroAtual > lucroMaximo){
                 lucroMaximo = lucroAtual;
+                pesoFinal = pesoAtual;
                 copiaVetores(escolhasOtimas, escolhasAtuais);
             }
         }
@@ -237,11 +242,6 @@ void mochila_quimica_ingenua(int tamanhoAtual, int pesoAtual){
 }
 
 //--------------------------
-
-
-
-
-
 
 int
 main()
@@ -265,10 +265,25 @@ main()
     for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
     for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
 
-    mochila_quimica(0,0);
-
+    mochila_quimica_ingenua(0,0);
     cout << "Lucro Final: " << lucroMaximo << endl;
     cout << "Vertices: " << vertices << endl;
+    cout << "Peso Final: " << pesoFinal << endl;
+
+    
+    lucroMaximo = 0;
+    vertices = 1;
+    mochila_quimica_sem_bounding(0,0);
+    cout << "Lucro Final: " << lucroMaximo << endl;
+    cout << "Vertices: " << vertices << endl;
+    cout << "Peso Final: " << pesoFinal << endl;
+    vertices = 1;
+    lucroMaximo = 0;
+    mochila_quimica(0,0);
+    cout << "Lucro Final: " << lucroMaximo << endl;
+    cout << "Vertices: " << vertices << endl;
+    cout << "Peso Final: " << pesoFinal << endl;
+
 
     return 0;
 }
