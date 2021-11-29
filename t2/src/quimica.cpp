@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <cstring>
  
-
 using namespace std;
 
 /****************/
@@ -65,24 +64,28 @@ void imprimePar(par_t par){
     printf("a: %d | b: %d\n", par.a, par.b);
 }
 
-void ordena(objeto_s *objetos, int tamanho, int inicio){
+// void ordena(objeto_s *objetos, int tamanho, int inicio){
 
-    float *razao = (float*) malloc (sizeof(float)*tamanho);
+//     float *razao = (float*) malloc (sizeof(float)*tamanho);
 
-    for (int i = 0; i < tamanho; i++){
-        razao[i] = (float) objetos[i].valor / objetos[i].peso;
-    }
+//     for (int i = 0; i < tamanho; i++){
+//         razao[i] = (float) objetos[i].valor / objetos[i].peso;
+//     }
 
-    // bubblesort reverso ao contrario invertido
-    for (int i = 0; i < tamanho; i++){
-        for (int j = 0; j < tamanho-1-i; j++){
-            if (razao[j] < razao[j+1]){
-                swap(razao[j], razao[j+1]);
-                swap(objetos[j], objetos[j+1]);
-            }
-        }
-    }
-    free(razao);
+//     // bubblesort reverso ao contrario invertido
+//     for (int i = 0; i < tamanho; i++){
+//         for (int j = 0; j < tamanho-1-i; j++){
+//             if (razao[j] < razao[j+1]){
+//                 swap(razao[j], razao[j+1]);
+//                 swap(objetos[j], objetos[j+1]);
+//             }
+//         }
+//     }
+//     free(razao);
+// }
+
+bool cmp (const objeto_t& objeto1, const objeto_t& objeto2){
+    return((double)objeto1.valor/objeto1.peso) > ((double)objeto2.valor/objeto2.peso);
 }
 
 void copiaVetores(int *dst, int *scr){
@@ -110,7 +113,8 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
         copia[i].valor = objetos[inicio+i].valor;
     }
 
-    ordena(copia,tamanhoAtual, inicio);
+    sort(&copia[0], &copia[tamanhoAtual], &cmp);
+    // ordena(copia,tamanhoAtual, inicio);
 
     int i = 0;
     while((i < tamanhoAtual) && (peso < pesoRestante)){
@@ -157,8 +161,80 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
             lucroMaximo = lucroAtual;
             pesoFinal = pesoAtual;
             copiaEscolhas();
-            for (int i = 0 ; i < qtdObjetos; i++) cout << escolhasOtimas[i] ; 
-            cout << endl;
+        }
+        
+    } else {
+        
+        float lucroAtual = 0;
+
+        for(int i = 0; i < tamanhoAtual; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+  
+        // int next_choice[2];
+        // double next_bound[2];
+        // for(int i = 0; i < 2; i++){
+        //     // chamar bounding para as duas escolhas
+        //     next_choice[i] = i;
+            
+        //     next_bound[i]  = (lucroAtual + proximoLucro) + rational_knapsack(objetos, tamanhoAtual+1, pesoMaximo - pesoAtual - proximoPeso);
+        // }
+
+        // mas pode ser isso
+        int proxEscolha[2] = {0, 1};
+        double proxLimite[2];
+        
+        proxLimite[0] = lucroAtual + rational_knapsack(objetos, tamanhoAtual+1, pesoMaximo - pesoAtual);
+        double proximoLucro = objetos[tamanhoAtual].valor;
+        int     proximoPeso = objetos[tamanhoAtual].peso;
+        proxLimite[1]  = lucroAtual + proximoLucro + rational_knapsack(objetos, tamanhoAtual+1, pesoMaximo - pesoAtual - proximoPeso);
+
+        // sort(&proxLimite[0], &proxLimite[1], greater<double>());
+
+        // se o limite quando se escolhe pegar o item foi maior que não pegar, troque a ordem de escolha
+        if(proxLimite[1] > proxLimite[0]){
+            swap(proxEscolha[0], proxEscolha[1]);
+            swap(proxLimite[0], proxLimite[1]);
+        }
+         
+        for (int i = 0; i < 2; i++){
+            if (proxLimite[i] < lucroMaximo){
+                return;
+            }
+
+            int pesoItemAtual = objetos[tamanhoAtual].peso;
+            // foi o jeito que achei perdão
+            // lembrando que o operador '&&' é curto circuito
+            if (proxEscolha[i] == 1 && (reage(escolhasAtuais, tamanhoAtual) || (pesoAtual + pesoItemAtual > pesoMaximo))){
+                continue;
+            }
+            escolhasAtuais[tamanhoAtual] = proxEscolha[i];
+            mochila_quimica(tamanhoAtual+1, pesoAtual + pesoItemAtual*proxEscolha[i]);
+        }
+
+        // int pesoItemAtual = objetos[tamanhoAtual].peso;
+        // if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
+        //     escolhasAtuais[tamanhoAtual] = 1;
+        //     mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+        // }
+        // escolhasAtuais[tamanhoAtual] = 0;
+        // mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual);
+    }
+}
+
+void mochila_quimica_sem_ordenacao(int tamanhoAtual, int pesoAtual){
+    
+    vertices++;
+    
+    if (tamanhoAtual == qtdObjetos){
+        int lucroAtual = 0;
+        for(int i = 0; i < qtdObjetos; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+        if(lucroAtual > lucroMaximo){
+            lucroMaximo = lucroAtual;
+            pesoFinal = pesoAtual;
+            copiaEscolhas();
 
         }
         
@@ -174,14 +250,15 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
         if (B <= lucroMaximo) {
             return;
         }
+        
 
         int pesoItemAtual = objetos[tamanhoAtual].peso;
         if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
             escolhasAtuais[tamanhoAtual] = 1;
-            mochila_quimica(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+            mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual + pesoItemAtual);
         }
         escolhasAtuais[tamanhoAtual] = 0;
-        mochila_quimica(tamanhoAtual+1, pesoAtual);
+        mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual);
     }
 }
 
@@ -265,20 +342,26 @@ main()
     for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
     for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
 
-    mochila_quimica_ingenua(0,0);
-    cout << "Lucro Final: " << lucroMaximo << endl;
-    cout << "Vertices: " << vertices << endl;
-    cout << "Peso Final: " << pesoFinal << endl;
+    // mochila_quimica_ingenua(0,0);
+    // cout << "Lucro Final: " << lucroMaximo << endl;
+    // cout << "Vertices: " << vertices << endl;
+    // cout << "Peso Final: " << pesoFinal << endl;
 
-    
     lucroMaximo = 0;
     vertices = 1;
     mochila_quimica_sem_bounding(0,0);
     cout << "Lucro Final: " << lucroMaximo << endl;
     cout << "Vertices: " << vertices << endl;
     cout << "Peso Final: " << pesoFinal << endl;
-    vertices = 1;
     lucroMaximo = 0;
+    vertices = 1;
+    mochila_quimica_sem_ordenacao(0, 0);
+    cout << "Lucro Final: " << lucroMaximo << endl;
+    cout << "Vertices: " << vertices << endl;
+    cout << "Peso Final: " << pesoFinal << endl;
+    cout << "\n\ncom ordena" << endl;
+    lucroMaximo = 0;
+    vertices = 1;
     mochila_quimica(0,0);
     cout << "Lucro Final: " << lucroMaximo << endl;
     cout << "Vertices: " << vertices << endl;
