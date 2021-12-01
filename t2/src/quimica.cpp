@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdint>
 #include <cstring>
+#include <sys/time.h>
  
 using namespace std;
 
@@ -318,12 +319,21 @@ void mochila_quimica_ingenua(int tamanhoAtual, int pesoAtual){
     }
 }
 
+double timestamp(void)
+{
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  return((double)(tp.tv_sec*1000.0 + tp.tv_usec/1000.0));
+}
+
 //--------------------------
 
 int
 main()
 {
-    vertices = 1;
+
+    double tempo;
+
 
     // Ler entradas
     scanf("%d %d %d", &qtdObjetos, &qtdPares, &pesoMaximo);
@@ -338,35 +348,52 @@ main()
     lerPares(qtdPares, pares);
 
     // Imprimir saída
-    printf("CapMax : %d\n", pesoMaximo);
-    for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
-    for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
-
-    // mochila_quimica_ingenua(0,0);
-    // cout << "Lucro Final: " << lucroMaximo << endl;
-    // cout << "Vertices: " << vertices << endl;
-    // cout << "Peso Final: " << pesoFinal << endl;
+    // printf("CapMax : %d\n", pesoMaximo);
+    // for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
+    // for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
 
     lucroMaximo = 0;
-    vertices = 1;
+    vertices = 0;
+    cerr << "Ingenua" << endl;
+    tempo = timestamp();
+    mochila_quimica_ingenua(0,0);
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+    
+
+    lucroMaximo = 0;
+    vertices = 0;
+    cerr << "Sem Bounding" << endl;
+    tempo = timestamp();
     mochila_quimica_sem_bounding(0,0);
-    cout << "Lucro Final: " << lucroMaximo << endl;
-    cout << "Vertices: " << vertices << endl;
-    cout << "Peso Final: " << pesoFinal << endl;
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+
+
     lucroMaximo = 0;
-    vertices = 1;
+    vertices = 0;
+    cerr << "Sem Ordenacao" << endl;
+    tempo = timestamp();
     mochila_quimica_sem_ordenacao(0, 0);
-    cout << "Lucro Final: " << lucroMaximo << endl;
-    cout << "Vertices: " << vertices << endl;
-    cout << "Peso Final: " << pesoFinal << endl;
-    cout << "\n\ncom ordena" << endl;
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+
+
     lucroMaximo = 0;
-    vertices = 1;
+    vertices = 0;
+    tempo = timestamp();
     mochila_quimica(0,0);
-    cout << "Lucro Final: " << lucroMaximo << endl;
-    cout << "Vertices: " << vertices << endl;
-    cout << "Peso Final: " << pesoFinal << endl;
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
 
 
     return 0;
 }
+
