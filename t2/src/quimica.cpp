@@ -65,26 +65,6 @@ void imprimePar(par_t par){
     printf("a: %d | b: %d\n", par.a, par.b);
 }
 
-// void ordena(objeto_s *objetos, int tamanho, int inicio){
-
-//     float *razao = (float*) malloc (sizeof(float)*tamanho);
-
-//     for (int i = 0; i < tamanho; i++){
-//         razao[i] = (float) objetos[i].valor / objetos[i].peso;
-//     }
-
-//     // bubblesort reverso ao contrario invertido
-//     for (int i = 0; i < tamanho; i++){
-//         for (int j = 0; j < tamanho-1-i; j++){
-//             if (razao[j] < razao[j+1]){
-//                 swap(razao[j], razao[j+1]);
-//                 swap(objetos[j], objetos[j+1]);
-//             }
-//         }
-//     }
-//     free(razao);
-// }
-
 bool cmp (const objeto_t& objeto1, const objeto_t& objeto2){
     return((double)objeto1.valor/objeto1.peso) > ((double)objeto2.valor/objeto2.peso);
 }
@@ -98,12 +78,9 @@ void copiaEscolhas(){
         escolhasOtimas[i] = escolhasAtuais[i];
 }
 
-
-
 double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
 
     int tamanhoAtual = qtdObjetos - inicio;
-    // float *escolha = (float*) calloc (sizeof(float),tamanhoAtual); // da pra tirar
     double peso = 0;
     double valor = 0;
 
@@ -115,7 +92,6 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
     }
 
     sort(&copia[0], &copia[tamanhoAtual], &cmp);
-    // ordena(copia,tamanhoAtual, inicio);
 
     int i = 0;
     while((i < tamanhoAtual) && (peso < pesoRestante)){
@@ -132,8 +108,6 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
     }
     return valor;
 }
-
-
 
 bool reage(int *estado_atual, int item_teste){
     
@@ -171,17 +145,6 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
         for(int i = 0; i < tamanhoAtual; i++){
             lucroAtual += objetos[i].valor*escolhasAtuais[i];
         }
-  
-        // int next_choice[2];
-        // double next_bound[2];
-        // for(int i = 0; i < 2; i++){
-        //     // chamar bounding para as duas escolhas
-        //     next_choice[i] = i;
-            
-        //     next_bound[i]  = (lucroAtual + proximoLucro) + rational_knapsack(objetos, tamanhoAtual+1, pesoMaximo - pesoAtual - proximoPeso);
-        // }
-
-        // mas pode ser isso
         int proxEscolha[2] = {0, 1};
         double proxLimite[2];
         
@@ -190,9 +153,6 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
         int     proximoPeso = objetos[tamanhoAtual].peso;
         proxLimite[1]  = lucroAtual + proximoLucro + rational_knapsack(objetos, tamanhoAtual+1, pesoMaximo - pesoAtual - proximoPeso);
 
-        // sort(&proxLimite[0], &proxLimite[1], greater<double>());
-
-        // se o limite quando se escolhe pegar o item foi maior que não pegar, troque a ordem de escolha
         if(proxLimite[1] > proxLimite[0]){
             swap(proxEscolha[0], proxEscolha[1]);
             swap(proxLimite[0], proxLimite[1]);
@@ -204,8 +164,6 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
             }
 
             int pesoItemAtual = objetos[tamanhoAtual].peso;
-            // foi o jeito que achei perdão
-            // lembrando que o operador '&&' é curto circuito
             if (proxEscolha[i] == 1 && (reage(escolhasAtuais, tamanhoAtual) || (pesoAtual + pesoItemAtual > pesoMaximo))){
                 continue;
             }
@@ -213,13 +171,6 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
             mochila_quimica(tamanhoAtual+1, pesoAtual + pesoItemAtual*proxEscolha[i]);
         }
 
-        // int pesoItemAtual = objetos[tamanhoAtual].peso;
-        // if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
-        //     escolhasAtuais[tamanhoAtual] = 1;
-        //     mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual + pesoItemAtual);
-        // }
-        // escolhasAtuais[tamanhoAtual] = 0;
-        // mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual);
     }
 }
 
@@ -347,10 +298,6 @@ main()
     lerObjetos(qtdObjetos ,objetos);
     lerPares(qtdPares, pares);
 
-    // Imprimir saída
-    // printf("CapMax : %d\n", pesoMaximo);
-    // for (int i = 0 ; i < qtdObjetos; i++) imprimeObjeto(objetos[i]);
-    // for (int i = 0 ; i < qtdPares;   i++) imprimePar(pares[i]);
 
     lucroMaximo = 0;
     vertices = 0;
@@ -396,4 +343,3 @@ main()
 
     return 0;
 }
-
