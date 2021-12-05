@@ -108,8 +108,8 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
     return valor;
 }
 
-// checa se o próximo item a ser colocado na mochila reage com um item
 bool reage(int *estado_atual, int item_teste){
+    
     for (int i = 0; i < qtdPares; i++){
         if ((pares[i].a-1 == item_teste) && (estado_atual[pares[i].b-1] == 1)){
             return true;
@@ -172,7 +172,102 @@ void mochila_quimica(int tamanhoAtual, int pesoAtual){
     }
 }
 
-// função auxiliar para contagem de tempo em milissegundos
+void mochila_quimica_sem_ordenacao(int tamanhoAtual, int pesoAtual){
+    
+    vertices++;
+    
+    if (tamanhoAtual == qtdObjetos){
+        int lucroAtual = 0;
+        for(int i = 0; i < qtdObjetos; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+        if(lucroAtual > lucroMaximo){
+            lucroMaximo = lucroAtual;
+            pesoFinal = pesoAtual;
+            copiaEscolhas();
+
+        }
+        
+    } else {
+    
+        float lucroAtual = 0;
+
+        for(int i = 0; i < tamanhoAtual; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+
+        double B = (float) lucroAtual + rational_knapsack(objetos, tamanhoAtual, pesoMaximo - pesoAtual);
+        if (B <= lucroMaximo) {
+            return;
+        }
+        
+
+        int pesoItemAtual = objetos[tamanhoAtual].peso;
+        if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
+            escolhasAtuais[tamanhoAtual] = 1;
+            mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+        }
+        escolhasAtuais[tamanhoAtual] = 0;
+        mochila_quimica_sem_ordenacao(tamanhoAtual+1, pesoAtual);
+    }
+}
+
+void mochila_quimica_sem_bounding(int tamanhoAtual, int pesoAtual){
+    
+    vertices++;
+    
+    if (tamanhoAtual == qtdObjetos){
+        int lucroAtual = 0;
+        for(int i = 0; i < qtdObjetos; i++){
+            lucroAtual += objetos[i].valor*escolhasAtuais[i];
+        }
+        if(lucroAtual > lucroMaximo){
+            lucroMaximo = lucroAtual;
+            pesoFinal = pesoAtual;
+            copiaVetores(escolhasOtimas, escolhasAtuais);
+        }
+    } else {
+        int pesoItemAtual = objetos[tamanhoAtual].peso;
+        if (!reage(escolhasAtuais, tamanhoAtual) && (pesoAtual + pesoItemAtual <= pesoMaximo)){
+            escolhasAtuais[tamanhoAtual] = 1;
+            mochila_quimica_sem_bounding(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+        }
+        escolhasAtuais[tamanhoAtual] = 0;
+        mochila_quimica_sem_bounding(tamanhoAtual+1, pesoAtual);
+    }
+}
+
+void mochila_quimica_ingenua(int tamanhoAtual, int pesoAtual){
+    
+    vertices++;
+    
+    if (tamanhoAtual == qtdObjetos){
+        int somaPesos = 0;
+        for(int i = 0; i < qtdObjetos; i++){
+            somaPesos += objetos[i].peso*escolhasAtuais[i];
+        }
+        if(somaPesos <= pesoMaximo){
+            int lucroAtual = 0;
+            for(int i = 0; i < qtdObjetos; i++){
+                lucroAtual += objetos[i].valor*escolhasAtuais[i];
+            }
+            if(lucroAtual > lucroMaximo){
+                lucroMaximo = lucroAtual;
+                pesoFinal = pesoAtual;
+                copiaVetores(escolhasOtimas, escolhasAtuais);
+            }
+        }
+    } else {
+        int pesoItemAtual = objetos[tamanhoAtual].peso;
+        if (!reage(escolhasAtuais, tamanhoAtual)){
+            escolhasAtuais[tamanhoAtual] = 1;
+            mochila_quimica_ingenua(tamanhoAtual+1, pesoAtual + pesoItemAtual);
+        }
+        escolhasAtuais[tamanhoAtual] = 0;
+        mochila_quimica_ingenua(tamanhoAtual+1, pesoAtual);
+    }
+}
+
 double timestamp(void)
 {
   struct timeval tp;
@@ -185,7 +280,9 @@ double timestamp(void)
 int
 main()
 {
+
     double tempo;
+
 
     // Ler entradas
     scanf("%d %d %d", &qtdObjetos, &qtdPares, &pesoMaximo);
@@ -199,22 +296,49 @@ main()
     lerObjetos(qtdObjetos ,objetos);
     lerPares(qtdPares, pares);
 
+    cerr << "Pares  : "<< qtdPares << endl;
+
+    lucroMaximo = 0;
+    vertices = 0;
+    cerr << "Ingenua" << endl;
+    tempo = timestamp();
+    mochila_quimica_ingenua(0,0);
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+    
+
+    lucroMaximo = 0;
+    vertices = 0;
+    cerr << "Sem Bounding" << endl;
+    tempo = timestamp();
+    mochila_quimica_sem_bounding(0,0);
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+
+
+    lucroMaximo = 0;
+    vertices = 0;
+    cerr << "Sem Ordenacao" << endl;
+    tempo = timestamp();
+    mochila_quimica_sem_ordenacao(0, 0);
+    tempo = timestamp() - tempo;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "==============" << endl;
+
+
     lucroMaximo = 0;
     vertices = 0;
     tempo = timestamp();
     mochila_quimica(0,0);
     tempo = timestamp() - tempo;
-    cout <<  lucroMaximo << endl;
-    // imprime os itens escolhidos
-    for(int i = 0; i < qtdObjetos; i++){
-        if(escolhasOtimas[i]){
-            cout << i+1 << ' ';
-        }
-    }
-    cout << endl;
-    // saída de erros para o relatório
-    cerr << vertices << endl;
-    cerr << tempo << "ms" << endl;
+    cerr << "Nós  : "<< vertices << endl;
+    cerr << "Tempo: " << tempo << "ms" << endl;
+
 
     return 0;
 }
