@@ -108,13 +108,22 @@ double rational_knapsack(objeto_t *objetos, int inicio, int pesoRestante){
     return valor;
 }
 
-bool reage(int *estado_atual, int item_teste){
-    
-    for (int i = 0; i < qtdPares; i++){
-        if ((pares[i].a-1 == item_teste) && (estado_atual[pares[i].b-1] == 1)){
+bool reage(int *estadoAtual, int itemTeste)
+{
+
+    for (int i = 0; i < qtdPares; i++)
+    {   
+        // checa se o item atual reage com:
+        // 1. um item anterior na lsita
+        // 2. que está na mochila 
+        // e é necessário checar se a ordem do par não está trocada
+        // por isso os dois if's
+        if ((pares[i].b - 1 <= itemTeste) && (pares[i].a - 1 == itemTeste) && (estadoAtual[pares[i].b - 1] == 1))
+        {
             return true;
         }
-        if ((pares[i].b-1 == item_teste) && (estado_atual[pares[i].a-1] == 1)){
+        if ((pares[i].a - 1 <= itemTeste) && (pares[i].b - 1 == itemTeste) && (estadoAtual[pares[i].a - 1] == 1))
+        {
             return true;
         }
     }
@@ -305,7 +314,7 @@ main()
     mochila_quimica_ingenua(0,0);
     tempo = timestamp() - tempo;
     cerr << "Nós  : "<< vertices << endl;
-    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "Tempo: " << tempo  << endl;
     cerr << "==============" << endl;
     
 
@@ -316,7 +325,7 @@ main()
     mochila_quimica_sem_bounding(0,0);
     tempo = timestamp() - tempo;
     cerr << "Nós  : "<< vertices << endl;
-    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "Tempo: " << tempo  << endl;
     cerr << "==============" << endl;
 
 
@@ -327,7 +336,7 @@ main()
     mochila_quimica_sem_ordenacao(0, 0);
     tempo = timestamp() - tempo;
     cerr << "Nós  : "<< vertices << endl;
-    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "Tempo: " << tempo  << endl;
     cerr << "==============" << endl;
 
 
@@ -337,7 +346,7 @@ main()
     mochila_quimica(0,0);
     tempo = timestamp() - tempo;
     cerr << "Nós  : "<< vertices << endl;
-    cerr << "Tempo: " << tempo << "ms" << endl;
+    cerr << "Tempo: " << tempo  << endl;
 
 
     return 0;
